@@ -2,47 +2,44 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+int  extraMemoryAllocated;
+void merge(int pData[], int left, int middle, int right) {
 
-int extraMemoryAllocated;
-
-void merge(int pData[], int l, int middle, int r) {
     int i, j, k;
-    int number1 = middle - l + 1;
-    int number2 = r - middle;
+    int number1 = middle - left + 1;
+    int number2 = right - middle;
+    int left_array[number1], right_array[number2];
 
-    int left[number1], right[number2];
+    extraMemoryAllocated = extraMemoryAllocated + sizeof(left) + sizeof(right);
 
-    for (i = 0; i < number1; i++) {
-        left[i] = pData[l + i];
-    }
-    for (j = 0; j < number2; j++) {
-        right[j] = pData[middle + 1 + j];
-    }
+    for (i = 0; i < number1; i++)
+        left_array[i] = pData[left + i];
+    for (j = 0; j < number2; j++)
+        right_array[j] = pData[middle + 1 + j];
 
     i = 0;
     j = 0;
-    k = l;
+    k = left;
 
     while (i < number1 && j < number2) {
-
-        if (left[i] <= right[j]) {
-            pData[k] = left[i];
+        if (left_array[i] <= right_array[j]) {
+            pData[k] = left_array[i];
             i++;
         } else {
-            pData[k] = right[j];
+            pData[k] = right_array[j];
             j++;
         }
         k++;
     }
 
     while (i < number1) {
-        pData[k] = left[i];
+        pData[k] = left_array[i];
         i++;
         k++;
     }
 
     while (j < number2) {
-        pData[k] = right[j];
+        pData[k] = right_array[j];
         j++;
         k++;
     }
@@ -50,15 +47,14 @@ void merge(int pData[], int l, int middle, int r) {
 
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
-void mergeSort(int pData[], int l, int r) {
+void mergeSort(int arr[], int left, int right) {
+    if (left < right) {
+        int middle = left + (right - left) / 2;
 
-    if (l < r) {
+        mergeSort(arr, left, middle);
+        mergeSort(arr, middle + 1, right);
 
-        int middle = 1 + (r - l) / 2;
-
-        mergeSort(pData, l, middle);
-        mergeSort(pData, middle + 1, r);
-        merge(pData, l, middle, r);
+        merge(arr, left, middle, right);
     }
 }
 
@@ -66,22 +62,17 @@ void mergeSort(int pData[], int l, int r) {
 // extraMemoryAllocated counts bytes of memory allocated
 void insertionSort(int* pData, int n) {
 
-    int i, item, j;
-
-    for (i = 1; i < n; i++) {
-
-        item = pData[i];
-
-        for (j = i - 1; j <= 0; j--) {
-
-            if (pData[j] > item) {
-                pData[j + 1] = pData[j];
-            } else
-                break;
-
-            pData[j + 1] = item;
-        }
+    int i, j, item = pData[i];
+    /* Move elements of arr[0..i-1], that are
+greater than key, to one position ahead
+of their current position */
+    for (j = i - 1; j >= 0; j--) {
+        if (pData[j] > item)
+            pData[j + 1] = pData[j];
+        else
+            break;
     }
+    pData[j + 1] = item;
 }
 
 // implement bubble sort
@@ -89,17 +80,14 @@ void insertionSort(int* pData, int n) {
 void bubbleSort(int* pData, int n) {
 
     int i, j, temp;
-
     for (i = 0; i < n - 1; i++) {
-
         for (j = 0; j < n - i - 1; j++) {
-
-            if (pData[j] > pData[j + 1]) {
-
-                temp         = pData;
+            if (pData[j] > pData[j + 1]) { //then swap
+                temp         = pData[j];
                 pData[j]     = pData[j + 1];
                 pData[j + 1] = temp;
             }
+            printArray(pData, n);
         }
     }
 }
@@ -108,19 +96,18 @@ void bubbleSort(int* pData, int n) {
 // extraMemoryAllocated counts bytes of extra memory allocated
 void selectionSort(int* pData, int n) {
 
-    int i, j, min, temp;
-
+    int i, j, min_idx, temp;
+    // One by one move boundary of unsorted subarray
     for (i = 0; i < n - 1; i++) {
-
-        min = i;
-        for (j = i + 1; j < n; j++) {
-
-            if (pData[j] < pData[min])
-                min = j;
-            temp       = pData[i];
-            pData[i]   = pData[min];
-            pData[min] = temp;
-        }
+        // Find the minimum element in unsorted array
+        min_idx = i;
+        for (j = i + 1; j < n; j++)
+            if (pData[j] < pData[min_idx])
+                min_idx = j;
+        // Swap the found minimum element with the first element
+        temp           = pData[i];
+        pData[i]       = pData[min_idx];
+        pData[min_idx] = temp;
     }
 }
 
@@ -133,14 +120,15 @@ int parseData(char* inputFileName, int** ppData) {
     if (inFile) {
         fscanf(inFile, "%d\n", &dataSz);
         *ppData = (int*)malloc(sizeof(int) * dataSz);
-        for (int i = 0; i < dataSz; i++) {
-            fscanf(inFile, "%d\n", &((*ppData)[i]));
+        if (*ppData) {
+            for (int i = 0; i < dataSz; i++) {
+                fscanf(inFile, "%d\n", &((*ppData)[i]));
+            }
         }
     }
-
+    fclose(inFile);
     return dataSz;
 }
-
 // prints first and last 100 items in the data array
 void printArray(int pData[], int dataSz) {
     int i, sz = dataSz - 100;
@@ -222,4 +210,5 @@ int main(void) {
         free(pDataCopy);
         free(pDataSrc);
     }
+    return 0;
 }
