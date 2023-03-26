@@ -5,12 +5,13 @@
 int  extraMemoryAllocated;
 void merge(int pData[], int left, int middle, int right) {
 
-    int i, j, k;
-    int number1 = middle - left + 1;
-    int number2 = right - middle;
-    int left_array[number1], right_array[number2];
+    int  i, j, k;
+    int  number1     = middle - left + 1;
+    int  number2     = right - middle;
+    int* left_array  = malloc(sizeof(int) * number1);
+    int* right_array = malloc(sizeof(int) * number2);
 
-    extraMemoryAllocated = extraMemoryAllocated + sizeof(left) + sizeof(right);
+    extraMemoryAllocated += (sizeof(int) * number1) + (sizeof(int) * number2);
 
     for (i = 0; i < number1; i++)
         left_array[i] = pData[left + i];
@@ -43,6 +44,8 @@ void merge(int pData[], int left, int middle, int right) {
         j++;
         k++;
     }
+    free(left_array);
+    free(right_array);
 }
 
 // implement merge sort
@@ -62,32 +65,29 @@ void mergeSort(int arr[], int left, int right) {
 // extraMemoryAllocated counts bytes of memory allocated
 void insertionSort(int* pData, int n) {
 
-    int i, j, item = pData[i];
-    /* Move elements of arr[0..i-1], that are
-greater than key, to one position ahead
-of their current position */
-    for (j = i - 1; j >= 0; j--) {
-        if (pData[j] > item)
+    int item, j;
+    for (int i = 1; i < n; i++) {
+        item = pData[i];
+        j    = i - 1;
+        while (j >= 0 && pData[j] > item) {
             pData[j + 1] = pData[j];
-        else
-            break;
+            j--;
+        }
     }
-    pData[j + 1] = item;
 }
 
 // implement bubble sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void bubbleSort(int* pData, int n) {
 
-    int i, j, temp;
-    for (i = 0; i < n - 1; i++) {
-        for (j = 0; j < n - i - 1; j++) {
-            if (pData[j] > pData[j + 1]) { //then swap
+    int temp;
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (pData[j] > pData[j + 1]) {
                 temp         = pData[j];
                 pData[j]     = pData[j + 1];
                 pData[j + 1] = temp;
             }
-            printArray(pData, n);
         }
     }
 }
@@ -96,18 +96,17 @@ void bubbleSort(int* pData, int n) {
 // extraMemoryAllocated counts bytes of extra memory allocated
 void selectionSort(int* pData, int n) {
 
-    int i, j, min_idx, temp;
-    // One by one move boundary of unsorted subarray
+    int i, j, min, temp;
     for (i = 0; i < n - 1; i++) {
-        // Find the minimum element in unsorted array
-        min_idx = i;
+        min = i;
         for (j = i + 1; j < n; j++)
-            if (pData[j] < pData[min_idx])
-                min_idx = j;
-        // Swap the found minimum element with the first element
-        temp           = pData[i];
-        pData[i]       = pData[min_idx];
-        pData[min_idx] = temp;
+            if (pData[j] < pData[min])
+                min = j;
+    }
+    if (min != 1) {
+        temp       = pData[i];
+        pData[i]   = pData[min];
+        pData[min] = temp;
     }
 }
 
